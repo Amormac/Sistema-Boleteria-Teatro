@@ -1,0 +1,15 @@
+[Unit]
+Description=Teatro - Web Gateway / Frontend (Puerto 8080)
+After=network.target teatro-auth.service teatro-events.service teatro-orders.service
+
+[Service]
+Type=simple
+User=azureuser
+WorkingDirectory=/home/azureuser/teatro
+EnvironmentFile=/home/azureuser/teatro/.env
+ExecStart=/home/azureuser/teatro/venv/bin/python services/gateway/app.py
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Teatro — Entradas{% endblock %}</title>
+    <meta name="description" content="Sistema de venta de entradas para teatro y centro de artes.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}?v=13">
+    {% block head %}{% endblock %}
+</head>
+
+<body class="{{ 'has-sidebar' if user else 'has-topbar' }}">
+
+    {% if user %}
+    <!-- ═══════ SIDEBAR (solo logueado) ═══════ -->
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <svg class="sidebar-logo-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"
+                stroke-linecap="round" stroke-linejoin="round">
+                <path
+                    d="M5 3a2 2 0 0 0-2 2v2a2 2 0 0 0 2 2h1v8a3 3 0 0 0 3 3h6a3 3 0 0 0 3-3V9h1a2 2 0 0 0 2-2V5a2 2 0 0 0-2-2H5z" />
+                <circle cx="9" cy="10" r="1.5" />
+                <circle cx="15" cy="10" r="1.5" />
+                <path d="M9 15c.5 1 1.5 2 3 2s2.5-1 3-2" />
+            </svg>
+            <span class="sidebar-brand">Teatro</span>
+        </div>
+
+        <nav class="sidebar-nav">
+            <div class="nav-section">
+                <span class="nav-section-title">Menú</span>
+                <a href="{{ url_for('index') }}"
+                    class="sidebar-link {% if request.endpoint == 'index' %}active{% endif %}">
+                    <span class="sidebar-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"
+                            stroke-linecap="round" stroke-linejoin="round">
+                            <path
+                                d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-4 0a1 1 0 01-1-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 01-1 1h-2z" />
+                        </svg>
+                    </span>
+                    <span class="sidebar-text">Inicio</span>
+                </a>
+                <a href="{{ url_for('index') }}"
+                    class="sidebar-link {% if request.endpoint == 'events_list' %}active{% endif %}">
+                    <span class="sidebar-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"
+                            stroke-linecap="round" stroke-linejoin="round">
+                            <rect x="3" y="4" width="18" height="18" rx="2" />
+                            <line x1="3" y1="10" x2="21" y2="10" />
+                            <line x1="8" y1="2" x2="8" y2="6" />
+                            <line x1="16" y1="2" x2="16" y2="6" />
+                        </svg>
+                    </span>
+                    <span class="sidebar-text">Eventos</span>
+                </a>
+                <a href="{{ url_for('my_tickets') }}"
+                    class="sidebar-link {% if request.endpoint == 'my_tickets' %}active{% endif %}">
+                    <span class="sidebar-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"
+                            stroke-linecap="round" stroke-linejoin="round">
+                            <path
+                                d="M15 5v2m0 4v2m0 4v2M3 7h2a2 2 0 012 2v0a2 2 0 01-2 2H3v4h2a2 2 0 012 2v0a2 2 0 01-2 2H3v1a1 1 0 001 1h16a1 1 0 001-1V4a1 1 0 00-1-1H4a1 1 0 00-1 1v3z" />
+                        </svg>
+                    </span>
+                    <span class="sidebar-text">Mis Tickets</span>
+                </a>
+            </div>
+
+            {% if user.role == 'ADMIN' %}
+            <div class="nav-section">
+                <span class="nav-section-title">Administración</span>
+                <button class="sidebar-link sidebar-submenu-toggle" onclick="toggleSubmenu('admin-submenu')">
+                    <span class="sidebar-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"
+                            stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="12" cy="12" r="3" />
+                            <path
+                                d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 11-2.83 2.83l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 11-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 11-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 110-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 112.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 114 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 112.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 110 4h-.09a1.65 1.65 0 00-1.51 1z" />
+                        </svg>
+                    </span>
+                    <span class="sidebar-text">Panel Admin</span>
+                    <span class="sidebar-arrow" id="admin-submenu-arrow">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                            stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="9 18 15 12 9 6" />
+                        </svg>
+                    </span>
+                </button>
+                <div class="sidebar-submenu" id="admin-submenu">
+                    <a href="{{ url_for('admin_dashboard') }}"
+                        class="sidebar-sublink {% if request.endpoint == 'admin_dashboard' %}active{% endif %}">
+                        <span class="sidebar-text">Dashboard</span>
+                    </a>
+                    <a href="{{ url_for('admin_venues') }}"
+                        class="sidebar-sublink {% if request.endpoint == 'admin_venues' %}active{% endif %}">
+                        <span class="sidebar-text">Salas</span>
+                    </a>
+                    <a href="{{ url_for('admin_events') }}"
+                        class="sidebar-sublink {% if request.endpoint in ('admin_events', 'admin_event_sales') %}active{% endif %}">
+                        <span class="sidebar-text">Eventos</span>
+                    </a>
+                </div>
+            </div>
+            {% endif %}
+        </nav>
+
+        <div class="sidebar-footer">
+            <div class="sidebar-user">
+                <div class="sidebar-user-avatar">{{ (user.name or user.email)[0]|upper }}</div>
+                <div class="sidebar-user-info">
+                    <span class="sidebar-user-name">{{ user.name or user.email }}</span>
+                    <span class="sidebar-user-role">{{ user.role }}</span>
+                </div>
+            </div>
+            <a href="{{ url_for('logout') }}" class="sidebar-link sidebar-logout">
+                <span class="sidebar-icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4" />
+                        <polyline points="16 17 21 12 16 7" />
+                        <line x1="21" y1="12" x2="9" y2="12" />
+                    </svg>
+                </span>
+                <span class="sidebar-text">Cerrar sesión</span>
+            </a>
+        </div>
+    </aside>
+
+    <!-- Mobile topbar -->
+    <header class="mobile-topbar">
+        <button class="mobile-menu-btn" onclick="toggleSidebar()" aria-label="Menú">
+            <span></span><span></span><span></span>
+        </button>
+        <span class="mobile-brand">Teatro</span>
+    </header>
+    <div class="sidebar-overlay" id="sidebar-overlay" onclick="toggleSidebar()"></div>
+
+    {% else %}
+    <!-- ═══════ TOPBAR (no logueado) ═══════ -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <a href="{{ url_for('index') }}" class="nav-logo">
+                <svg class="nav-logo-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"
+                    stroke-linecap="round" stroke-linejoin="round">
+                    <path
+                        d="M5 3a2 2 0 0 0-2 2v2a2 2 0 0 0 2 2h1v8a3 3 0 0 0 3 3h6a3 3 0 0 0 3-3V9h1a2 2 0 0 0 2-2V5a2 2 0 0 0-2-2H5z" />
+                    <circle cx="9" cy="10" r="1.5" />
+                    <circle cx="15" cy="10" r="1.5" />
+                    <path d="M9 15c.5 1 1.5 2 3 2s2.5-1 3-2" />
+                </svg>
+                <span class="logo-text">Teatro</span>
+            </a>
+            <div class="nav-links">
+                <a href="{{ url_for('index') }}" class="nav-link">Eventos</a>
+                <a href="{{ url_for('login_page') }}" class="btn btn-sm btn-primary">Iniciar sesión</a>
+                <a href="{{ url_for('register_page') }}" class="btn btn-sm btn-outline">Registrarse</a>
+            </div>
+        </div>
+    </nav>
+    {% endif %}
+
+    <!-- Main content wrapper -->
+    <div class="main-wrapper">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+        <div class="flash-container">
+            {% for category, message in messages %}
+            <div class="flash flash-{{ category }}">
+                <span>{{ message }}</span>
+                <button class="flash-close" onclick="this.parentElement.remove()">×</button>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+        {% endwith %}
+
+        <main class="main-content">
+            {% block content %}{% endblock %}
+        </main>
+
+        <footer class="footer">
+            <div class="footer-inner">
+                <p>Sistema de Venta de Entradas — Teatro & Centro de Artes</p>
+            </div>
+        </footer>
+    </div>
+
+    <script src="{{ url_for('static', filename='js/app.js') }}?v=11"></script>
+    <script>
+        function toggleSidebar() {
+            document.getElementById('sidebar').classList.toggle('open');
+            document.getElementById('sidebar-overlay').classList.toggle('visible');
+        }
+        function toggleSubmenu(id) {
+            const submenu = document.getElementById(id);
+            const arrow = document.getElementById(id + '-arrow');
+            submenu.classList.toggle('open');
+            if (arrow) {
+                arrow.classList.toggle('rotated');
+            }
+        }
+        document.addEventListener('DOMContentLoaded', () => {
+            const adminSubmenu = document.getElementById('admin-submenu');
+            if (adminSubmenu && adminSubmenu.querySelector('.active')) {
+                adminSubmenu.classList.add('open');
+                const arrow = document.getElementById('admin-submenu-arrow');
+                if (arrow) arrow.classList.add('rotated');
+            }
+        });
+    </script>
+    {% block scripts %}{% endblock %}
+</body>
+
+</html>

@@ -1,0 +1,95 @@
+{% extends "base.html" %}
+{% block title %}Mis Tickets — Teatro{% endblock %}
+
+{% block content %}
+<section class="section">
+    <div class="container">
+        <h1 class="page-title">
+            <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="2"
+                stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-right: 8px;">
+                <path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"></path>
+                <polyline points="13 2 13 9 20 9"></polyline>
+            </svg>
+            Mis Tickets
+        </h1>
+
+        {% if orders %}
+        <div class="orders-list">
+            {% for order in orders %}
+            <div class="card card-order">
+                <div class="card-body">
+                    <div class="order-header">
+                        <div>
+                            <h3 class="order-event-title">{{ order.event_title }}</h3>
+                            <p class="order-meta">
+                                <span>
+                                    <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor"
+                                        stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                                        style="vertical-align: text-bottom;">
+                                        <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
+                                        <circle cx="12" cy="10" r="3"></circle>
+                                    </svg>
+                                    {{ order.venue_name }}
+                                </span>
+                                <span>
+                                    <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor"
+                                        stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                                        style="vertical-align: text-bottom;">
+                                        <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                                        <line x1="16" y1="2" x2="16" y2="6"></line>
+                                        <line x1="8" y1="2" x2="8" y2="6"></line>
+                                        <line x1="3" y1="10" x2="21" y2="10"></line>
+                                    </svg>
+                                    {{ order.event_date[:16].replace('T', ' · ') }}
+                                </span>
+                            </p>
+                        </div>
+                        <div class="order-status">
+                            <span class="badge badge-{{ order.status|lower }}">
+                                {{ order.status }}
+                            </span>
+                        </div>
+                    </div>
+
+                    {% if order.tickets %}
+                    <div class="tickets-grid">
+                        {% for ticket in order.tickets %}
+                        <div class="ticket-card">
+                            <div class="ticket-seat">
+                                <span class="ticket-seat-label">Asiento</span>
+                                <span class="ticket-seat-id">{{ ticket.seat_id }}</span>
+                            </div>
+                            <div class="ticket-code">
+                                <span class="ticket-code-label">Código</span>
+                                <span class="ticket-code-value">{{ ticket.code }}</span>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+
+                    <div class="order-footer">
+                        <span class="order-total">Total: ${{ "%.2f"|format(order.total) }}</span>
+                        <span class="order-date">{{ order.created_at[:16].replace('T', ' ') }}</span>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="empty-state">
+            <div class="empty-icon">
+                <svg viewBox="0 0 24 24" width="48" height="48" fill="none" stroke="currentColor" stroke-width="1.5"
+                    stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"></path>
+                    <polyline points="13 2 13 9 20 9"></polyline>
+                </svg>
+            </div>
+            <h3>No tienes tickets aún</h3>
+            <p>Explora los eventos disponibles y compra tus entradas.</p>
+            <a href="{{ url_for('index') }}" class="btn btn-primary">Ver eventos</a>
+        </div>
+        {% endif %}
+    </div>
+</section>
+{% endblock %}

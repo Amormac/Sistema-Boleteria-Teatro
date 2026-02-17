@@ -1,0 +1,117 @@
+{% extends "base.html" %}
+{% block title %}Admin — Ventas: {{ event.title if event else '' }}{% endblock %}
+
+{% block content %}
+<section class="section">
+    <div class="container">
+        <div class="page-header">
+            <h1 class="page-title">
+                <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="2"
+                    stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-right: 8px;">
+                    <polyline points="23 6 13.5 15.5 8.5 10.5 1 18"></polyline>
+                    <polyline points="17 6 23 6 23 12"></polyline>
+                </svg>
+                Ventas del Evento
+            </h1>
+            <a href="{{ url_for('admin_events') }}" class="btn btn-sm btn-outline">← Eventos</a>
+        </div>
+
+        {% if event %}
+        <div class="card" style="margin-bottom: 1.5rem;">
+            <div class="card-body">
+                <h2>{{ event.title }}</h2>
+                <p class="card-meta">
+                    <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"
+                        stroke-linecap="round" stroke-linejoin="round" style="vertical-align: text-bottom;">
+                        <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
+                        <circle cx="12" cy="10" r="3"></circle>
+                    </svg>
+                    {{ event.venue_name }}
+                    <span style="margin: 0 4px;">·</span>
+                    <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"
+                        stroke-linecap="round" stroke-linejoin="round" style="vertical-align: text-bottom;">
+                        <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                        <line x1="16" y1="2" x2="16" y2="6"></line>
+                        <line x1="8" y1="2" x2="8" y2="6"></line>
+                        <line x1="3" y1="10" x2="21" y2="10"></line>
+                    </svg>
+                    {{ event.start_time[:16].replace('T', ' · ') }}
+                </p>
+                <p><span class="badge badge-{{ event.status|lower }}">{{ event.status }}</span></p>
+            </div>
+        </div>
+
+        <!-- Stats -->
+        {% if stats %}
+        <div class="stats-grid" style="margin-bottom: 1.5rem;">
+            <div class="stat-card stat-total">
+                <div class="stat-value">{{ stats.total }}</div>
+                <div class="stat-label">Total asientos</div>
+            </div>
+            <div class="stat-card stat-free">
+                <div class="stat-value">{{ stats.free }}</div>
+                <div class="stat-label">Libres</div>
+            </div>
+            <div class="stat-card stat-held">
+                <div class="stat-value">{{ stats.held }}</div>
+                <div class="stat-label">Reservados</div>
+            </div>
+            <div class="stat-card stat-sold">
+                <div class="stat-value">{{ stats.sold }}</div>
+                <div class="stat-label">Vendidos</div>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Órdenes -->
+        <h2 class="section-title">Órdenes</h2>
+
+        {% if orders %}
+        <div class="table-responsive">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Orden #</th>
+                        <th>Usuario</th>
+                        <th>Email</th>
+                        <th>Asientos</th>
+                        <th>Total</th>
+                        <th>Estado</th>
+                        <th>Tickets</th>
+                        <th>Fecha</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for order in orders %}
+                    <tr>
+                        <td>{{ order.id }}</td>
+                        <td>{{ order.user_name }}</td>
+                        <td>{{ order.user_email }}</td>
+                        <td>{{ order.seat_count }}</td>
+                        <td>${{ "%.2f"|format(order.total) }}</td>
+                        <td><span class="badge badge-{{ order.status|lower }}">{{ order.status }}</span></td>
+                        <td>
+                            {% for ticket in order.tickets %}
+                            <span class="ticket-badge">{{ ticket.seat_id }}: {{ ticket.code }}</span><br>
+                            {% endfor %}
+                        </td>
+                        <td>{{ order.created_at[:16].replace('T', ' ') }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="empty-state">
+            <p>No hay órdenes para este evento.</p>
+        </div>
+        {% endif %}
+
+        {% else %}
+        <div class="empty-state">
+            <p>Evento no encontrado.</p>
+        </div>
+        {% endif %}
+    </div>
+</section>
+{% endblock %}

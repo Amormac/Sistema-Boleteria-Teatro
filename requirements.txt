@@ -1,0 +1,7 @@
+flask
+psycopg2-binary
+pymongo
+bcrypt
+PyJWT
+python-dotenv
+requests

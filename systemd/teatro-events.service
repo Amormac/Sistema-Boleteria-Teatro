@@ -1,0 +1,15 @@
+[Unit]
+Description=Teatro - Events & Seating Service (Puerto 7001)
+After=network.target
+
+[Service]
+Type=simple
+User=azureuser
+WorkingDirectory=/home/azureuser/teatro
+EnvironmentFile=/home/azureuser/teatro/.env
+ExecStart=/home/azureuser/teatro/venv/bin/python services/events/app.py
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,15 @@
+[Unit]
+Description=Teatro - Orders Service (Puerto 7002)
+After=network.target
+
+[Service]
+Type=simple
+User=azureuser
+WorkingDirectory=/home/azureuser/teatro
+EnvironmentFile=/home/azureuser/teatro/.env
+ExecStart=/home/azureuser/teatro/venv/bin/python services/orders/app.py
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

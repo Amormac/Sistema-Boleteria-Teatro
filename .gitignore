@@ -1,0 +1,22 @@
+# Entorno
+.env
+venv/
+__pycache__/
+*.pyc
+*.pyo
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# Node (por si acaso)
+node_modules/

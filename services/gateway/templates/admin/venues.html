@@ -1,0 +1,163 @@
+{% extends "base.html" %}
+{% block title %}Admin — Salas{% endblock %}
+
+{% block content %}
+<section class="section">
+    <div class="container">
+        <div class="page-header">
+            <h1 class="page-title">
+                <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="2"
+                    stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-right: 8px;">
+                    <path d="M3 21h18M5 21V7l8-4 8 4v14M8 21V12a4 4 0 0 1 8 0v9"></path>
+                </svg>
+                Gestión de Salas
+            </h1>
+            <a href="{{ url_for('admin_dashboard') }}" class="btn btn-sm btn-outline">← Dashboard</a>
+        </div>
+
+        <!-- Formulario crear sala -->
+        <div class="card card-form">
+            <div class="card-body">
+                <h3>Crear Nueva Sala</h3>
+                <form action="{{ url_for('admin_create_venue') }}" method="POST" enctype="multipart/form-data">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="name">Nombre de la sala</label>
+                            <input type="text" id="name" name="name" placeholder="Ej: Sala Principal" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="rows_count">Filas (A-Z)</label>
+                            <input type="number" id="rows_count" name="rows_count" value="10" min="1" max="26" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="cols_count">Columnas</label>
+                            <input type="number" id="cols_count" name="cols_count" value="15" min="1" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="image_main">Imagen Principal</label>
+                            <input type="file" id="image_main" name="image_main" accept="image/*">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="image_gallery">Galería (Seleccionar múltiples)</label>
+                        <input type="file" id="image_gallery" name="image_gallery" multiple accept="image/*" style="width: 100%;">
+                    </div>
+                    <div class="form-group form-group-btn">
+                        <button type="submit" class="btn btn-primary">+ Crear Sala</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Lista de salas -->
+        <h2 class="section-title">Salas existentes</h2>
+
+        {% if venues %}
+        <div class="cards-grid">
+            {% for venue in venues %}
+            <div class="card">
+                {% if venue.image_main %}
+                <img src="{{ venue.image_main }}" alt="{{ venue.name }}"
+                    style="width:100%; height:140px; object-fit:cover; border-radius: var(--radius) var(--radius) 0 0;">
+                {% else %}
+                <div
+                    style="width:100%; height:140px; background:var(--surface-light); display:flex; align-items:center; justify-content:center; border-radius: var(--radius) var(--radius) 0 0;">
+                    <svg viewBox="0 0 24 24" width="64" height="64" stroke="#5e5c64" fill="none" stroke-width="2">
+                        <path d="M3 21h18M5 21V7l8-4 8 4v14M8 21V12a4 4 0 0 1 8 0v9"></path>
+                    </svg>
+                </div>
+                {% endif %}
+                <div class="card-body" style="text-align: center;">
+                    <h3 class="card-title">{{ venue.name }}</h3>
+                    <p class="card-meta">{{ venue.rows_count }} filas × {{ venue.cols_count }} columnas</p>
+                    <p class="card-meta">{{ venue.rows_count * venue.cols_count }} asientos totales</p>
+
+                    <div style="margin-top: 1rem; display: flex; gap: 8px; flex-wrap: wrap; justify-content: center;">
+                        {% if venue.has_active_events %}
+                        <div style="display:flex; flex-direction:column; gap:4px;">
+                            <button class="btn btn-sm btn-outline" disabled
+                                title="No se puede editar mientras tenga funciones asignadas"
+                                style="opacity: 0.5; cursor: not-allowed;">Editar</button>
+                            <span
+                                style="font-size: 0.75rem; color: var(--danger); background: rgba(255,0,0,0.1); padding: 2px 6px; border-radius: 4px;">
+                                🚫 Funciones asignadas
+                            </span>
+                        </div>
+                        {% else %}
+                        <button class="btn btn-sm btn-outline" onclick='openEditModal({{ venue|tojson }})'>Editar</button>
+                        {% endif %}
+                        <form action="{{ url_for("admin_delete_venue", venue_id=venue.id) }}" method="POST"
+                            onsubmit="return confirm('¿Seguro que deseas eliminar esta sala? No se puede deshacer.');">
+                            <button type="submit" class="btn btn-sm btn-danger">Eliminar</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="empty-state">
+            <p>No hay salas creadas. Usa el formulario de arriba para crear una.</p>
+        </div>
+        {% endif %}
+    </div>
+</section>
+
+<!-- Modal Editar -->
+<div id="editModal" class="modal"
+    style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:1000; align-items:center; justify-content:center;">
+    <div class="card" style="width:90%; max-width:500px; padding:20px;">
+        <h3>Editar Sala</h3>
+        <form id="editForm" method="POST" enctype="multipart/form-data">
+            <input type="hidden" id="current_image_main" name="current_image_main">
+            <input type="hidden" id="current_image_gallery" name="current_image_gallery">
+            <div class="form-group">
+                <label>Nombre</label>
+                <input type="text" id="edit_name" name="name" required>
+            </div>
+            <div class="form-row" style="display: flex; gap: 10px;">
+                <div class="form-group" style="flex:1;">
+                    <label>Filas</label>
+                    <input type="number" id="edit_rows_count" name="rows_count" required min="1" max="26">
+                </div>
+                <div class="form-group" style="flex:1;">
+                    <label>Columnas</label>
+                    <input type="number" id="edit_cols_count" name="cols_count" required min="1" max="50">
+                </div>
+            </div>
+            <div class="form-group">
+                <label>Imagen Principal (Dejar vacío para mantener actual)</label>
+                <input type="file" id="edit_image_main" name="image_main" accept="image/*">
+            </div>
+            <div class="form-group">
+                <label>Galería (Seleccionar para reemplazar)</label>
+                <input type="file" id="edit_image_gallery" name="image_gallery" multiple accept="image/*">
+            </div>
+            <div class="form-group form-group-btn" style="justify-content: flex-end;">
+                <button type="button" class="btn btn-outline" onclick="closeEditModal()">Cancelar</button>
+                <button type="submit" class="btn btn-primary">Guardar Cambios</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    function openEditModal(venue) {
+        document.getElementById('editModal').style.display = 'flex';
+        document.getElementById('edit_name').value = venue.name;
+        document.getElementById('edit_rows_count').value = venue.rows_count;
+        document.getElementById('edit_cols_count').value = venue.cols_count;
+        
+        // Store current images in hidden fields
+        document.getElementById('current_image_main').value = venue.image_main || '';
+        document.getElementById('current_image_gallery').value = (venue.image_gallery || []).join(',');
+        
+        const form = document.getElementById('editForm');
+        form.action = `/admin/venues/${venue.id}/edit`;
+    }
+
+    function closeEditModal() {
+        document.getElementById('editModal').style.display = 'none';
+    }
+</script>
+{% endblock %}
